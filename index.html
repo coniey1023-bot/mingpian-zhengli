@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>名片資料整理</title>
+  <style>
+    :root {
+      --ink: #132238;
+      --muted: #667085;
+      --brand: #145578;
+      --brand-dark: #0d3c56;
+      --brand-soft: #e7f2f8;
+      --line: #d8e2eb;
+      --paper: #ffffff;
+      --page: #f4f8fb;
+      --shadow: 0 16px 45px rgba(30, 71, 98, .10);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--page);
+      font-family: "Aptos", "Microsoft JhengHei", "Noto Sans TC", Arial, sans-serif;
+      line-height: 1.55;
+    }
+    .page { width: min(1600px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 44px; }
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: flex-end;
+      margin-bottom: 20px;
+    }
+    h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); letter-spacing: .02em; }
+    .lead { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+    .offline {
+      flex: 0 0 auto;
+      color: var(--brand-dark);
+      background: var(--brand-soft);
+      border: 1px solid #c5deeb;
+      border-radius: 999px;
+      padding: 7px 13px;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .toolbar, .panel {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    .toolbar { padding: 16px; margin-bottom: 18px; }
+    .toolbar-grid { display: grid; grid-template-columns: minmax(260px, 1fr) 190px auto auto; gap: 10px; }
+    input, select, button {
+      min-height: 42px;
+      border: 1px solid #cbd7e2;
+      border-radius: 10px;
+      font: inherit;
+    }
+    input, select { width: 100%; padding: 9px 12px; background: #fff; color: var(--ink); }
+    input:focus, select:focus, button:focus { outline: 3px solid rgba(20, 85, 120, .18); outline-offset: 1px; }
+    button { cursor: pointer; padding: 8px 14px; font-weight: 700; color: #fff; background: var(--brand); border-color: var(--brand); }
+    button:hover { background: var(--brand-dark); }
+    button.secondary { color: var(--brand-dark); background: #fff; border-color: #b9cad7; }
+    .toolbar-meta { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 12px; color: var(--muted); font-size: 13px; }
+    .toolbar-meta strong { color: var(--ink); }
+    .panel { overflow: hidden; }
+    .table-wrap { overflow: auto; max-height: 68vh; }
+    table { width: 100%; min-width: 1180px; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+    th, td { padding: 12px 13px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      color: #fff;
+      background: var(--brand);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    th:first-child { border-top-left-radius: 17px; }
+    th:last-child { border-top-right-radius: 17px; }
+    tbody tr { background: #fff; transition: background .15s ease; }
+    tbody tr:nth-child(even) { background: #f8fbfd; }
+    tbody tr:hover { background: #eaf4f9; }
+    .name { font-weight: 800; white-space: nowrap; }
+    .company { min-width: 220px; font-weight: 700; }
+    .sub { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .link { color: var(--brand-dark); word-break: break-word; }
+    .tag { display: inline-flex; border-radius: 999px; padding: 3px 9px; font-size: 12px; font-weight: 700; background: #eef3f6; color: #536675; white-space: nowrap; }
+    .tag.yes { background: #e4f4eb; color: #14633a; }
+    .tag.no { background: #f2f4f7; color: #667085; }
+    .empty { padding: 42px 20px; color: var(--muted); text-align: center; }
+    .panel-footer { display: flex; justify-content: space-between; gap: 12px; padding: 13px 16px; color: var(--muted); font-size: 12px; background: #fbfdfe; }
+    dialog { width: min(920px, calc(100% - 28px)); max-height: 88vh; padding: 0; border: 0; border-radius: 18px; box-shadow: 0 24px 70px rgba(11, 39, 60, .3); color: var(--ink); }
+    dialog::backdrop { background: rgba(13, 35, 52, .48); }
+    .dialog-head { display: flex; justify-content: space-between; align-items: start; gap: 16px; padding: 20px 22px 14px; background: var(--brand); color: #fff; }
+    .dialog-head h2 { margin: 0; font-size: 24px; }
+    .dialog-head p { margin: 3px 0 0; color: #d5eaf3; font-size: 13px; }
+    .close { min-height: 36px; padding: 4px 10px; color: #fff; background: transparent; border-color: rgba(255,255,255,.55); }
+    .detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0; padding: 8px 22px 18px; }
+    .detail { padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); }
+    .detail:nth-child(even) { padding-left: 12px; }
+    .detail dt { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .detail dd { margin: 3px 0 0; word-break: break-word; white-space: pre-wrap; }
+    .detail.full { grid-column: 1 / -1; padding-left: 0; }
+    .dialog-foot { display: flex; justify-content: flex-end; padding: 14px 22px 20px; }
+    @media (max-width: 800px) {
+      .page { width: min(100% - 20px, 1600px); padding-top: 18px; }
+      .hero { display: block; }
+      .offline { display: inline-block; margin-top: 12px; }
+      .toolbar-grid { grid-template-columns: 1fr 1fr; }
+      .toolbar-grid input { grid-column: 1 / -1; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .detail:nth-child(even), .detail.full { padding-left: 0; }
+      .panel-footer { display: block; }
+      .panel-footer span + span { display: block; margin-top: 4px; }
+    }
+    @media print {
+      body { background: #fff; }
+      .page { width: 100%; padding: 0; }
+      .toolbar, .offline, .panel-footer, .action, dialog { display: none !important; }
+      .panel { border: 0; box-shadow: none; }
+      .table-wrap { max-height: none; overflow: visible; }
+      table { min-width: 0; font-size: 9px; }
+      th { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="hero">
+      <div>
+        <h1>名片資料整理</h1>
+        <p class="lead">從「名片歸檔」照片整理而成的離線名片查詢頁面。</p>
+      </div>
+      <div class="offline">單機版・無需網路</div>
+    </header>
+
+    <section class="toolbar" aria-label="搜尋與操作">
+      <div class="toolbar-grid">
+        <input id="search" type="search" placeholder="搜尋姓名、公司、電話、Email、地址……" autocomplete="off">
+        <select id="field" aria-label="搜尋欄位">
+          <option value="all">全部欄位</option>
+          <option value="name">姓名</option>
+          <option value="company">公司／機構</option>
+          <option value="title">職稱</option>
+          <option value="phone">電話／手機</option>
+          <option value="email">Email</option>
+          <option value="address">地址</option>
+          <option value="file">原始檔名</option>
+        </select>
+        <button id="export" type="button">匯出目前結果 CSV</button>
+        <button id="print" class="secondary" type="button">列印</button>
+      </div>
+      <div class="toolbar-meta">
+        <span>顯示 <strong id="count">9</strong> / 9 筆</span>
+        <span>點選「查看全部」可展開完整名片資訊</span>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="名片資料表">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>姓名</th>
+              <th>公司／機構</th>
+              <th>部門／單位</th>
+              <th>職稱</th>
+              <th>電話</th>
+              <th>手機</th>
+              <th>Email</th>
+              <th>地址</th>
+              <th>QR Code</th>
+              <th class="action">操作</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+      <div class="panel-footer">
+        <span>資料來源：名片歸檔資料夾內 9 張 JPG 照片</span>
+        <span>原始檔名與原圖路徑已保留；QR Code 僅標示有無，未另行解碼。</span>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="detailDialog">
+    <div id="detailContent"></div>
+  </dialog>
+
+  <script>
+    const cards = [
+      { id: 1, name: "陳紀妍", nameEn: "", company: "南山人壽保險股份有限公司", companyEn: "", unit: "竹中通訊處", title: "業務主任", titleEn: "", address: "30054 新竹市東大路二段110號5樓之2", addressEn: "", phone: "03-5311107", extension: "", fax: "03-5311436", mobile: "0925-158-568", email: "don789g@yahoo.com.tw", website: "http://www.nanshanlife.com.tw", taxId: "11456006", otherCompany: "", otherAddress: "", otherPhone: "", otherFax: "", otherEmail: "", otherTitle: "", qr: "無", other: "南山人壽標誌；標語：保險讓您安心", handwritten: "右上角有手寫註記，字跡不清，未做推測", file: "Scan20260511_183043(1).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260511_183043(1).jpg" },
+      { id: 2, name: "吳文忠", nameEn: "", company: "台灣自來水公司", companyEn: "Ministry of Economic Affairs Second Branch, Taiwan Water Corporation", unit: "第二區管理處", title: "副處長", titleEn: "", address: "324 桃園市平鎮區水廠路150號", addressEn: "", phone: "(03) 464-3131", extension: "202", fax: "(03) 464-3135", mobile: "0912-223257", email: "h485@mail.water.gov.tw", website: "", taxId: "", otherCompany: "", otherAddress: "", otherPhone: "", otherFax: "", otherEmail: "", otherTitle: "", qr: "無", other: "姓名旁標示：育丞；頁首英文：Ministry of Economic Affairs；台灣自來水公司標誌", handwritten: "", file: "Scan20260511_183043(2).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260511_183043(2).jpg" },
+      { id: 3, name: "謝欣雄", nameEn: "", company: "KoMiCo Technology Taiwan Ltd", companyEn: "KoMiCo Technology Taiwan Ltd", unit: "管理部", title: "資深廠務經理", titleEn: "", address: "303 新竹縣湖口鄉實踐路14號", addressEn: "", phone: "03-597-2988", extension: "123", fax: "03-597-2188", mobile: "0933-976-646", email: "Jason.Hsieh@komico.com", website: "http://www.komico.com", taxId: "28124684", otherCompany: "", otherAddress: "", otherPhone: "", otherFax: "", otherEmail: "", otherTitle: "", qr: "無", other: "品牌字樣：KoMiCo；標語：Chamber Solution Provider；Email 帳號含 Jason.Hsieh", handwritten: "", file: "Scan20260511_183043(3).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260511_183043(3).jpg" },
+      { id: 4, name: "莊榮堂", nameEn: "Kung, Jung-Tang", company: "國立體育大學", companyEn: "National Taiwan Sport University", unit: "", title: "體育長", titleEn: "Professor & Director", address: "333325 桃園市龜山區文化一路250號", addressEn: "No.250, Wenhua 1st Rd., Guishan District, Taoyuan City 333325, Taiwan.", phone: "886-3-3283201", extension: "5005", fax: "886-3-397-2904", mobile: "0921-336730", email: "kung@ntsu.edu.tw", website: "", taxId: "02612744", otherCompany: "", otherAddress: "", otherPhone: "", otherFax: "", otherEmail: "", otherTitle: "", qr: "有（未解碼）", other: "名片含 QR Code；英文職稱：Professor & Director", handwritten: "", file: "Scan20260511_183043(5).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260511_183043(5).jpg" },
+      { id: 5, name: "", nameEn: "", company: "九福建築師事務所", companyEn: "JOE FU ARCHITECTURE", unit: "", title: "", titleEn: "", address: "雲林縣斗六市成功路569號", addressEn: "", phone: "05-5328108", extension: "", fax: "05-5321108", mobile: "", email: "joefu.archi@gmail.com", website: "", taxId: "38913272", otherCompany: "", otherAddress: "", otherPhone: "", otherFax: "", otherEmail: "", otherTitle: "", qr: "有（未解碼）", other: "名片含 QR Code；建築師事務所", handwritten: "", file: "Scan20260512_102051(1).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260512_102051(1).jpg" },
+      { id: 6, name: "江璽龍", nameEn: "", company: "江璽龍建築師事務所", companyEn: "Architect & Associate", unit: "", title: "", titleEn: "", address: "台北市內湖區陽光街323號1樓", addressEn: "", phone: "(02) 8797-3567", extension: "2539", fax: "(02) 8797-3276", mobile: "", email: "clc25@ceci.com.tw", website: "", taxId: "", otherCompany: "", otherAddress: "", otherPhone: "", otherFax: "", otherEmail: "", otherTitle: "", qr: "無", other: "英文／標誌字樣：CEC；建築師事務所", handwritten: "", file: "Scan20260512_102051(2).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260512_102051(2).jpg" },
+      { id: 7, name: "蔡仁毅", nameEn: "", company: "福建金門馬祖地區建築師公會", companyEn: "Fujian Kinmen Matsu Architects Association", unit: "鑑定委員會", title: "主任委員", titleEn: "", address: "89350 金門縣金城鎮民權路226巷4弄22號4樓", addressEn: "", phone: "(082) 328 712", extension: "", fax: "(082) 328 713", mobile: "0937 911 858", email: "", website: "", taxId: "77355036", otherCompany: "蔡仁毅建築師事務所", otherAddress: "110 台北市信義區和平東路3段323號7樓", otherPhone: "(02) 2345 8707", otherFax: "(02) 2345 8707", otherEmail: "jybear.tsai@msa.hinet.net", otherTitle: "負責人", qr: "無", other: "公會與建築師事務所兩組聯絡資訊均列於名片", handwritten: "", file: "Scan20260512_102051(3).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260512_102051(3).jpg" },
+      { id: 8, name: "俞翰蒼", nameEn: "", company: "詮力實業股份有限公司", companyEn: "", unit: "", title: "一級專員", titleEn: "", address: "110 台北市信義區松德路161號11樓之1", addressEn: "", phone: "(02) 2726-8558", extension: "", fax: "(02) 2726-8158", mobile: "0972 061 551", email: "ji394su3@chuanli.com.tw", website: "", taxId: "43794487", otherCompany: "", otherAddress: "", otherPhone: "", otherFax: "", otherEmail: "", otherTitle: "", qr: "有（未解碼）", other: "名片含 QR Code", handwritten: "中央有藍筆手寫註記，字跡不清，未做推測", file: "Scan20260512_102051(4).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260512_102051(4).jpg" },
+      { id: 9, name: "鄭子傑", nameEn: "", company: "傳真機構", companyEn: "VIRTUOSI REAL ESTATE", unit: "", title: "副總經理", titleEn: "", address: "台北市市民大道四段100號15樓", addressEn: "", phone: "+886 2 2777-1288", extension: "", fax: "+886 2 2777-1211", mobile: "+886 931 393 717", email: "chengtzuchieh@gmail.com", website: "", taxId: "", otherCompany: "", otherAddress: "", otherPhone: "", otherFax: "", otherEmail: "", otherTitle: "", qr: "無", other: "專業建築代銷；SINCE 1988；服務項目：傳真實業、傳美廣告、傳捷廣告、傳陽建設、傳豐投資", handwritten: "右上方有藍筆手寫註記，字跡不清，未做推測", file: "Scan20260512_102051(5).jpg", path: "C:/Users/conie/OneDrive/桌面/2026-1115-ai課程/名片歸檔/Scan20260512_102051(5).jpg" }
+    ];
+
+    const fields = [
+      ["姓名", "name"], ["英文姓名", "nameEn"], ["公司／機構", "company"], ["英文公司／機構", "companyEn"],
+      ["部門／單位", "unit"], ["職稱", "title"], ["英文職稱", "titleEn"], ["地址", "address"], ["英文地址", "addressEn"],
+      ["電話", "phone"], ["分機", "extension"], ["傳真", "fax"], ["手機", "mobile"], ["Email", "email"], ["網址", "website"],
+      ["統一編號", "taxId"], ["其他聯絡單位", "otherCompany"], ["其他地址", "otherAddress"], ["其他電話", "otherPhone"],
+      ["其他傳真", "otherFax"], ["其他Email", "otherEmail"], ["其他職務", "otherTitle"], ["QR Code", "qr"],
+      ["名片其他可見資訊", "other"], ["手寫註記", "handwritten"], ["原始檔名", "file"], ["原圖路徑", "path"]
+    ];
+
+    const rows = document.querySelector("#rows");
+    const search = document.querySelector("#search");
+    const field = document.querySelector("#field");
+    const count = document.querySelector("#count");
+    const dialog = document.querySelector("#detailDialog");
+    const detailContent = document.querySelector("#detailContent");
+    const escapeHtml = (value) => String(value ?? "").replace(/[&<>\"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;" }[char]));
+    const display = (value) => value ? escapeHtml(value) : "—";
+    const searchable = (card) => Object.fromEntries(Object.entries(card).map(([key, value]) => [key, String(value ?? "").toLowerCase()]));
+
+    function filteredCards() {
+      const query = search.value.trim().toLowerCase();
+      const selected = field.value;
+      if (!query) return cards;
+      return cards.filter((card) => {
+        const data = searchable(card);
+        if (selected === "all") return Object.values(data).some((value) => value.includes(query));
+        if (selected === "phone") return [data.phone, data.mobile, data.fax, data.extension, data.otherPhone, data.otherFax].some((value) => value.includes(query));
+        if (selected === "address") return [data.address, data.addressEn, data.otherAddress].some((value) => value.includes(query));
+        if (selected === "email") return [data.email, data.otherEmail].some((value) => value.includes(query));
+        if (selected === "file") return data.file.includes(query);
+        return data[selected]?.includes(query);
+      });
+    }
+
+    function render() {
+      const result = filteredCards();
+      count.textContent = result.length;
+      rows.innerHTML = result.length ? result.map((card) => `
+        <tr>
+          <td>${card.id}</td>
+          <td class="name">${display(card.name)}${card.nameEn ? `<span class="sub">${display(card.nameEn)}</span>` : ""}</td>
+          <td class="company">${display(card.company)}${card.companyEn ? `<span class="sub">${display(card.companyEn)}</span>` : ""}</td>
+          <td>${display(card.unit)}</td>
+          <td>${display(card.title)}${card.titleEn ? `<span class="sub">${display(card.titleEn)}</span>` : ""}</td>
+          <td>${display(card.phone)}${card.extension ? `<span class="sub">分機 ${display(card.extension)}</span>` : ""}</td>
+          <td>${display(card.mobile)}</td>
+          <td>${card.email ? `<span class="link">${display(card.email)}</span>` : "—"}</td>
+          <td>${display(card.address)}</td>
+          <td><span class="tag ${card.qr.startsWith("有") ? "yes" : "no"}">${display(card.qr)}</span></td>
+          <td class="action"><button type="button" class="secondary" data-id="${card.id}">查看全部</button></td>
+        </tr>`).join("") : `<tr><td class="empty" colspan="11">找不到符合條件的名片資料</td></tr>`;
+      rows.querySelectorAll("button[data-id]").forEach((button) => button.addEventListener("click", () => openDetail(Number(button.dataset.id))));
+    }
+
+    function openDetail(id) {
+      const card = cards.find((item) => item.id === id);
+      if (!card) return;
+      detailContent.innerHTML = `
+        <div class="dialog-head">
+          <div><h2>${display(card.name || card.company)}</h2><p>${display(card.company)}${card.title ? `・${display(card.title)}` : ""}</p></div>
+          <button type="button" class="close" id="closeDialog">關閉</button>
+        </div>
+        <dl class="detail-grid">${fields.map(([label, key]) => `<div class="detail ${["other", "handwritten", "path"].includes(key) ? "full" : ""}"><dt>${label}</dt><dd>${display(card[key])}</dd></div>`).join("")}</dl>
+        <div class="dialog-foot"><button type="button" class="secondary" id="closeDialogBottom">關閉</button></div>`;
+      detailContent.querySelector("#closeDialog").addEventListener("click", () => dialog.close());
+      detailContent.querySelector("#closeDialogBottom").addEventListener("click", () => dialog.close());
+      dialog.showModal();
+    }
+
+    function csvCell(value) { return `"${String(value ?? "").replace(/"/g, '""')}"`; }
+    document.querySelector("#export").addEventListener("click", () => {
+      const result = filteredCards();
+      const header = ["編號", ...fields.map(([label]) => label)];
+      const lines = [header, ...result.map((card) => [card.id, ...fields.map(([, key]) => card[key])])]
+        .map((row) => row.map(csvCell).join(","));
+      const blob = new Blob(["\uFEFF" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "名片資料整理_目前結果.csv";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    });
+    document.querySelector("#print").addEventListener("click", () => window.print());
+    search.addEventListener("input", render);
+    field.addEventListener("change", render);
+    render();
+  </script>
+</body>
+</html>
